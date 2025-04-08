@@ -1,9 +1,15 @@
 'use client';
 import { useState } from 'react';
 
+function formatCurrency(value: number): string {
+  return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
 export default function Home() {
+  const [valorTexto, setValorTexto] = useState('');
   const [valorVenda, setValorVenda] = useState(0);
-  const [taxaMensal, setTaxaMensal] = useState(2.45); // taxa de antecipação padrão
+  const [taxaMensal, setTaxaMensal] = useState(2.45);
+
   const taxaDiaria = (taxaMensal / 100) / 30;
   const valorParcela = valorVenda / 12;
 
@@ -24,6 +30,18 @@ export default function Home() {
   const totalLiquido = parcelas.reduce((acc, p) => acc + p.valorLiquido, 0);
   const custoTotal = valorVenda - totalLiquido;
 
+  const handleValorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/[^0-9]/g, '');
+    const number = parseFloat(raw) / 100;
+    setValorVenda(number);
+    setValorTexto(
+      number.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+      })
+    );
+  };
+
   return (
     <main className="max-w-4xl mx-auto p-6 space-y-6">
       <h1 className="text-2xl font-bold text-center">Calculadora de Antecipação Realista</h1>
@@ -31,10 +49,12 @@ export default function Home() {
         <label className="block">
           Valor da Venda:
           <input
-            type="number"
+            type="text"
+            inputMode="numeric"
             className="w-full p-2 border rounded"
-            value={valorVenda}
-            onChange={(e) => setValorVenda(parseFloat(e.target.value) || 0)}
+            value={valorTexto}
+            onChange={handleValorChange}
+            placeholder="R$ 0,00"
           />
         </label>
         <label className="block">
@@ -68,16 +88,16 @@ export default function Home() {
                     <td className="border p-2">{p.numero}</td>
                     <td className="border p-2">{p.dias}</td>
                     <td className="border p-2">{p.taxaEfetiva.toFixed(2)}</td>
-                    <td className="border p-2">R$ {p.valorBruto.toFixed(2)}</td>
-                    <td className="border p-2">R$ {p.valorLiquido.toFixed(2)}</td>
+                    <td className="border p-2">{formatCurrency(p.valorBruto)}</td>
+                    <td className="border p-2">{formatCurrency(p.valorLiquido)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
           <div className="mt-4 text-lg">
-            <p><strong>Total Líquido Recebido:</strong> R$ {totalLiquido.toFixed(2)}</p>
-            <p><strong>Custo da Antecipação:</strong> R$ {custoTotal.toFixed(2)}</p>
+            <p><strong>Total Líquido Recebido:</strong> {formatCurrency(totalLiquido)}</p>
+            <p><strong>Custo da Antecipação:</strong> {formatCurrency(custoTotal)}</p>
           </div>
         </>
       )}
