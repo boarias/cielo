@@ -1,0 +1,1 @@
+// Componente de comparação de taxas
